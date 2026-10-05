@@ -1,0 +1,511 @@
+from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Inches, Pt
+
+prs = Presentation()
+prs.slide_width = Inches(13.333)
+prs.slide_height = Inches(7.5)
+
+# Түстер палитрасы
+COLOR_BG = RGBColor(248, 249, 250)
+COLOR_PRIMARY = RGBColor(15, 23, 42)
+COLOR_ACCENT = RGBColor(37, 99, 235)
+COLOR_TEXT = RGBColor(51, 65, 85)
+COLOR_CODE_BG = RGBColor(30, 41, 59)
+COLOR_CODE_TEXT = RGBColor(241, 245, 249)
+
+
+def set_slide_background(slide):
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = COLOR_BG
+
+
+def add_header(slide, title_text, category_text=""):
+    if category_text:
+        cat_box = slide.shapes.add_textbox(
+            Inches(0.8), Inches(0.4), Inches(11.7), Inches(0.4)
+        )
+        tf_c = cat_box.text_frame
+        tf_c.word_wrap = True
+        p_c = tf_c.paragraphs[0]
+        p_c.text = category_text.upper()
+        p_c.font.size = Pt(10)
+        p_c.font.bold = True
+        p_c.font.color.rgb = COLOR_ACCENT
+
+    title_top = Inches(0.7) if category_text else Inches(0.5)
+    title_box = slide.shapes.add_textbox(
+        Inches(0.8), title_top, Inches(11.7), Inches(0.8)
+    )
+    tf = title_box.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.text = title_text
+    p.font.size = Pt(24)
+    p.font.bold = True
+    p.font.color.rgb = COLOR_PRIMARY
+
+
+def add_code_block(slide, code_text, left, top, width, height):
+    shape = slide.shapes.add_shape(
+        MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height
+    )
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = COLOR_CODE_BG
+    shape.line.color.rgb = COLOR_CODE_BG
+
+    tf = shape.text_frame
+    tf.word_wrap = True
+    tf.margin_left = Inches(0.2)
+    tf.margin_right = Inches(0.2)
+    tf.margin_top = Inches(0.2)
+    tf.margin_bottom = Inches(0.2)
+
+    p = tf.paragraphs[0]
+    p.text = code_text
+    p.font.size = Pt(11)
+    p.font.name = "Consolas"
+    p.font.color.rgb = COLOR_CODE_TEXT
+
+
+blank_layout = prs.slide_layouts[6]
+
+# ==================== 1-СЛАЙД: ТИТУЛ ====================
+slide1 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide1)
+
+t_box = slide1.shapes.add_textbox(
+    Inches(1.0), Inches(2.2), Inches(11.3), Inches(3.5)
+)
+tf1 = t_box.text_frame
+tf1.word_wrap = True
+
+p1 = tf1.paragraphs[0]
+p1.text = "Асимметриялық шифрлау"
+p1.font.size = Pt(40)
+p1.font.bold = True
+p1.font.color.rgb = COLOR_ACCENT
+
+p2 = tf1.add_paragraph()
+p2.text = "RSA, Diffie-Hellman және ECC алгоритмдерінің жұмыс принциптері"
+p2.font.size = Pt(22)
+p2.font.color.rgb = COLOR_PRIMARY
+p2.space_before = Pt(10)
+
+p3 = tf1.add_paragraph()
+p3.text = (
+    "Заманауи криптография, математикалық негіздері және Python кодары"
+)
+p3.font.size = Pt(14)
+p3.font.color.rgb = COLOR_TEXT
+p3.space_before = Pt(25)
+
+# ==================== 2-СЛАЙД: ТҮСІНІКТЕМЕ ====================
+slide2 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide2)
+add_header(
+    slide2,
+    "Асимметриялық шифрлау деген не?",
+    "Ашық кілтті криптография негіздері",
+)
+
+b_box2 = slide2.shapes.add_textbox(
+    Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+tf2 = b_box2.text_frame
+tf2.word_wrap = True
+
+points2 = [
+    (
+        "Негізгі концепция:",
+        " Деректерді шифрлау және дешифрлау үшін екі түрлі кілт қолданылады (Кілттер жұбы).",
+    ),
+    (
+        "Ашық кілт (Public Key):",
+        " Баршаға қолжетімді. Деректерді шифрлау немесе қолтаңбаны тексеру үшін пайдаланылады.",
+    ),
+    (
+        "Жабық кілт (Private Key):",
+        " Тек иесіне ғана белгілі құпия кілт. Деректерді дешифрлау немесе ЭЦҚ қою үшін қолданылады.",
+    ),
+    (
+        "Басты артықшылығы:",
+        " Құпия кілтті желі арқылы тасымалдаудың қажеті жоқ, бұл байланыс қауіпсіздігін арттырады.",
+    ),
+]
+
+for title, desc in points2:
+    p = tf2.add_paragraph()
+    p.space_before = Pt(14)
+
+    run_t = p.add_run()
+    run_t.text = title
+    run_t.font.bold = True
+    run_t.font.size = Pt(16)
+    run_t.font.color.rgb = COLOR_PRIMARY
+
+    run_d = p.add_run()
+    run_d.text = desc
+    run_d.font.size = Pt(16)
+    run_d.font.color.rgb = COLOR_TEXT
+
+# ==================== 3-СЛАЙД: RSA ТЕОРИЯ ====================
+slide3 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide3)
+add_header(
+    slide3, "1. RSA (Rivest–Shamir–Adleman)", "Алгоритм-1: Факторизация"
+)
+
+b_box3 = slide3.shapes.add_textbox(
+    Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+tf3 = b_box3.text_frame
+tf3.word_wrap = True
+
+points3 = [
+    (
+        "Математикалық негізі:",
+        " Екі үлкен жай санның көбейтіндісін факторизациялаудың (жіктеудің) жоғары қиындығы.",
+    ),
+    (
+        "Қолданылуы:",
+        " Конфиденциалды деректерді шифрлау, Электрондық цифрлық қолтаңба (ЭЦҚ).",
+    ),
+    (
+        "Генерациялау қадамдары:",
+        "\n  1. Екі жай сан таңдалады: p және q\n  2. Модуль есептеледі: n = p × q\n  3. Эйлер функциясы: φ(n) = (p - 1) × (q - 1)\n  4. Ашық экспонента e таңдалып, жабық экспонента d есептеледі: (d × e) mod φ(n) = 1",
+    ),
+]
+
+for title, desc in points3:
+    p = tf3.add_paragraph()
+    p.space_before = Pt(12)
+
+    run_t = p.add_run()
+    run_t.text = title
+    run_t.font.bold = True
+    run_t.font.size = Pt(16)
+    run_t.font.color.rgb = COLOR_PRIMARY
+
+    run_d = p.add_run()
+    run_d.text = desc
+    run_d.font.size = Pt(15)
+    run_d.font.color.rgb = COLOR_TEXT
+
+# ==================== 4-СЛАЙД: RSA КОД ====================
+slide4 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide4)
+add_header(
+    slide4,
+    "RSA: Python тіліндегі реализациясы",
+    "Код мысалы — Демонстрация",
+)
+
+rsa_code = """# RSA Математикалық моделі
+
+p, q = 61, 53
+n = p * q                # Модуль: n = 3233
+phi = (p - 1) * (q - 1)  # Эйлер функциясы: phi = 3120
+
+e = 17                   # Ашық кілт экспонентасы
+d = pow(e, -1, phi)      # Жабық кілт экспонентасы (d = 2753)
+
+message = 42             # Бастапқы сан түріндегі хабарлама
+
+# Шифрлау: C = (M ^ e) % n
+ciphertext = pow(message, e, n)
+print(f"Шифрланған хабарлама: {ciphertext}")  # Шығыс: 2557
+
+# Дешифрлау: M = (C ^ d) % n
+decrypted = pow(ciphertext, d, n)
+print(f"Дешифрланған хабарлама: {decrypted}")  # Шығыс: 42"""
+
+add_code_block(
+    slide4, rsa_code, Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+
+# ==================== 5-СЛАЙД: DIFFIE-HELLMAN ТЕОРИЯ ====================
+slide5 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide5)
+add_header(
+    slide5,
+    "2. Diffie-Hellman (DH) Кілт алмасу хаттамасы",
+    "Алгоритм-2: Дискретті логарифм",
+)
+
+b_box5 = slide5.shapes.add_textbox(
+    Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+tf5 = b_box5.text_frame
+tf5.word_wrap = True
+
+points5 = [
+    (
+        "Математикалық негізі:",
+        " Ақырлы өрістегі дискретті логарифмдеу мәселесінің қиындығы.",
+    ),
+    (
+        "Мақсаты:",
+        " Хабарламаны шифрлау емес, ашық байланыс арнасы арқылы екі тарапқа ортақ құпия кілтті (Shared Secret) келісіп алуға мүмкіндік беру.",
+    ),
+    (
+        "Пайдаланылуы:",
+        " Симметриялық шифрлау алгоритмдеріне (AES сияқты) арналған сессиялық кілттерді қауіпсіз генерациялау (TLS/SSL, VPN).",
+    ),
+]
+
+for title, desc in points5:
+    p = tf5.add_paragraph()
+    p.space_before = Pt(14)
+
+    run_t = p.add_run()
+    run_t.text = title
+    run_t.font.bold = True
+    run_t.font.size = Pt(16)
+    run_t.font.color.rgb = COLOR_PRIMARY
+
+    run_d = p.add_run()
+    run_d.text = desc
+    run_d.font.size = Pt(16)
+    run_d.font.color.rgb = COLOR_TEXT
+
+# ==================== 6-СЛАЙД: DIFFIE-HELLMAN КОД ====================
+slide6 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide6)
+add_header(
+    slide6,
+    "Diffie-Hellman: Python тіліндегі реализациясы",
+    "Код мысалы — Кілт алмасу",
+)
+
+dh_code = """import random
+
+# Баршаға ортақ белгілі параметрлер (жай сан p және генератор g)
+p, g = 23, 5
+
+# 1. Алиса мен Боб өздерінің құпия сандарын таңдайды
+a_private = random.randint(1, p - 1)
+b_private = random.randint(1, p - 1)
+
+# 2. Ашық кілттерді есептейді және желі арқылы алмасады
+A_public = pow(g, a_private, p)  # Алиса Бобқа жібереді
+B_public = pow(g, b_private, p)  # Боб Алисаға жібереді
+
+# 3. Екі тарап ортақ құпия кілтті өз бетінше есептеп шығарады
+alice_shared = pow(B_public, a_private, p)
+bob_shared = pow(A_public, b_private, p)
+
+print(f"Алиса есептеген кілт: {alice_shared}")
+print(f"Боб есептеген кілт:   {bob_shared}")  # Екі мән толықтай бірдей!"""
+
+add_code_block(
+    slide6, dh_code, Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+
+# ==================== 7-СЛАЙД: ECC ТЕОРИЯ ====================
+slide7 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide7)
+add_header(
+    slide7,
+    "3. ECC (Elliptic Curve Cryptography)",
+    "Алгоритм-3: Эллипстік қисықтар",
+)
+
+b_box7 = slide7.shapes.add_textbox(
+    Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+tf7 = b_box7.text_frame
+tf7.word_wrap = True
+
+points7 = [
+    (
+        "Математикалық негізі:",
+        " y² = x³ + ax + b теңдеуімен берілген эллипстік қисық бойындағы нүктелерді көбейту операциялары.",
+    ),
+    (
+        "Басты артықшылығы:",
+        " Өте шағын кілт көлемімен өте жоғары криптографиялық беріктік береді. Есептеу ресурсы аз құрылғыларға (смартфондар, IoT) қолайлы.",
+    ),
+    (
+        "Кілт көлемін салыстыру:",
+        " 256-биттық ECC кілті қауіпсіздігі жағынан 3072-биттық RSA кілтіне толықтай эквивалент.",
+    ),
+]
+
+for title, desc in points7:
+    p = tf7.add_paragraph()
+    p.space_before = Pt(14)
+
+    run_t = p.add_run()
+    run_t.text = title
+    run_t.font.bold = True
+    run_t.font.size = Pt(16)
+    run_t.font.color.rgb = COLOR_PRIMARY
+
+    run_d = p.add_run()
+    run_d.text = desc
+    run_d.font.size = Pt(16)
+    run_d.font.color.rgb = COLOR_TEXT
+
+# ==================== 8-СЛАЙД: ECC КОД ====================
+slide8 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide8)
+add_header(
+    slide8,
+    "ECC (ECDH): Python тіліндегі реализациясы",
+    "Код мысалы — Стандартты кітапхана",
+)
+
+ecc_code = """from cryptography.hazmat.primitives.asymmetric import ec
+
+# 1. Алиса мен Боб SECP256R1 эллипстік қисығында кілт жұптарын генерациялайды
+alice_private_key = ec.generate_private_key(ec.SECP256R1())
+bob_private_key = ec.generate_private_key(ec.SECP256R1())
+
+# 2. Ашық кілттерді алу
+alice_public_key = alice_private_key.public_key()
+bob_public_key = bob_private_key.public_key()
+
+# 3. ECDH хаттамасы арқылы ортақ құпия кілтті есептеу
+alice_shared_key = alice_private_key.exchange(ec.ECDH(), bob_public_key)
+bob_shared_key = bob_private_key.exchange(ec.ECDH(), alice_public_key)
+
+print(f"Алиса кілті (hex): {alice_shared_key.hex()[:24]}...")
+print(f"Боб кілті (hex):   {bob_shared_key.hex()[:24]}...")"""
+
+add_code_block(
+    slide8, ecc_code, Inches(0.8), Inches(1.8), Inches(11.7), Inches(5.0)
+)
+
+# ==================== 9-СЛАЙД: САЛЫСТЫРУ КЕСТЕСІ ====================
+slide9 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide9)
+add_header(
+    slide9, "Алгоритмдерді салыстырмалы талдау", "Салыстыру кестесі"
+)
+
+rows, cols = 6, 4
+left, top, width, height = (
+    Inches(0.8),
+    Inches(1.8),
+    Inches(11.7),
+    Inches(4.8),
+)
+table_shape = slide9.shapes.add_table(rows, cols, left, top, width, height)
+table = table_shape.table
+
+table.columns[0].width = Inches(2.7)
+table.columns[1].width = Inches(3.0)
+table.columns[2].width = Inches(3.0)
+table.columns[3].width = Inches(3.0)
+
+headers = ["Критерий", "RSA", "Diffie-Hellman", "ECC"]
+for i, h in enumerate(headers):
+    cell = table.cell(0, i)
+    cell.fill.solid()
+    cell.fill.fore_color.rgb = COLOR_PRIMARY
+    p = cell.text_frame.paragraphs[0]
+    p.text = h
+    p.font.bold = True
+    p.font.color.rgb = RGBColor(255, 255, 255)
+    p.font.size = Pt(14)
+
+data = [
+    [
+        "Математикасы",
+        "Үлкен сандарды факторизациялау",
+        "Дискретті логарифм",
+        "Эллипстік қисықтар",
+    ],
+    [
+        "Кілт ұзындығы",
+        "2048 - 4096 бит",
+        "2048 - 4096 бит",
+        "256 - 384 бит (Ең шағын)",
+    ],
+    ["Жылдамдығы", "Баяу", "Орташа", "Өте жылдам"],
+    ["Ресурсты тұтыну", "Жоғары", "Орташа", "Төмен (Тиімді)"],
+    [
+        "Негізгі бағыты",
+        "Шифрлау, ЭЦҚ",
+        "Кілттерді қауіпсіз алмасу",
+        "Кілт алмасу, ЭЦҚ",
+    ],
+]
+
+for row_idx, row_data in enumerate(data, start=1):
+    for col_idx, text in enumerate(row_data):
+        cell = table.cell(row_idx, col_idx)
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = (
+            RGBColor(255, 255, 255) if row_idx % 2 == 1 else COLOR_BG
+        )
+        p = cell.text_frame.paragraphs[0]
+        p.text = text
+        p.font.size = Pt(13)
+        p.font.color.rgb = COLOR_TEXT
+        if col_idx == 0:
+            p.font.bold = True
+
+# ==================== 10-СЛАЙД: ҚОРЫТЫНДЫ ====================
+slide10 = prs.slides.add_slide(blank_layout)
+set_slide_background(slide10)
+add_header(slide10, "Қорытынды", "Түйін")
+
+b_box10 = slide10.shapes.add_textbox(
+    Inches(0.8), Inches(1.8), Inches(11.7), Inches(4.0)
+)
+tf10 = b_box10.text_frame
+tf10.word_wrap = True
+
+points10 = [
+    (
+        "RSA:",
+        " Криптографияның классикалық негізі. Сенімді, бірақ үлкен кілттерді талап етеді.",
+    ),
+    (
+        "Diffie-Hellman:",
+        " Ашық желіде құпия кілттерді қауіпсіз келісіп алудың таптырмас хаттамасы.",
+    ),
+    (
+        "ECC:",
+        " Заманауи криптографияның стандарты. Шағын кілт көлемімен жоғары жылдамдық пен берік қауіпсіздік береді.",
+    ),
+]
+
+for title, desc in points10:
+    p = tf10.add_paragraph()
+    p.space_before = Pt(14)
+
+    run_t = p.add_run()
+    run_t.text = title
+    run_t.font.bold = True
+    run_t.font.size = Pt(16)
+    run_t.font.color.rgb = COLOR_PRIMARY
+
+    run_d = p.add_run()
+    run_d.text = desc
+    run_d.font.size = Pt(16)
+    run_d.font.color.rgb = COLOR_TEXT
+
+# Назарларыңызға рахмет
+thx_box = slide10.shapes.add_textbox(
+    Inches(0.8), Inches(5.8), Inches(11.7), Inches(1.0)
+)
+tf_thx = thx_box.text_frame
+p_thx = tf_thx.paragraphs[0]
+p_thx.text = "Назарларыңызға рахмет!"
+p_thx.font.size = Pt(24)
+p_thx.font.bold = True
+p_thx.font.color.rgb = COLOR_ACCENT
+p_thx.alignment = PP_ALIGN.CENTER
+
+# Файлды сақтау
+prs.save("Асимметриялык_шифрлау_презентация.pptx")
+print(
+    "Презентация сәтті жасалды: 'Асимметриялык_шифрлау_презентация.pptx'"
+)
